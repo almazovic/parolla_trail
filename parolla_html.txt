@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Passaparola Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #question { font-size: 24px; margin: 20px; }
+        #answer { font-size: 18px; }
+        #timer { font-size: 20px; margin: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Passaparola Game</h1>
+    <div id="question"></div>
+    <input type="text" id="answer" />
+    <button onclick="checkAnswer()">Submit</button>
+    <button onclick="passQuestion()">Pass</button>
+    <button onclick="endGame()">Finish and Show Results</button>
+    <div id="timer"></div>
+
+    <script>
+        const qaDict = {
+            "A": ["(birini) terk etmek (leave), bir şeyden vazgeçmek (give up)", "abandon"],
+            "B": ["geri kalmış, geriye doğru", "backward"],
+            "C": ["hesap makinesi", "calculator"],
+            "D": ["tartışmak, münazara etmek", "debate"],
+            "E": ["deprem", "earthquake"],
+            "F": ["= (1) uydurmak (= make up) (2) (raf vb) monte etmek (= put up)", "fabricate"],
+            "G": ["= (1) toplamak, bir araya getirmek (2) bir araya gelmek", "gather"],
+            "H": ["saldırmak, taciz etmek", "harass"],
+            "I": ["buz dağı (= glacier)", "iceberg"],
+            "J": ["tehlikeye atmak (= endanger, imperil)", "jeopardize"],
+            "K": ["= köpek kulübesi", "kennel"],
+            "L": ["etiketlemek", "label"],
+            "M": ["pek çok kişi tarafından kabul gören inanış veya düşünce", "mainstream"],
+            "N": ["kıl payı", "narrowly"],
+            "O": ["şişman, obez", "obese"],
+            "P": ["kısmen", "partially"],
+            "Q": ["sıra, kuyruk", "queue"],
+            "R": ["ırk", "race"],
+            "S": ["adamak, kurban adamak", "sacrifice"],
+            "T": ["(1) havalanmak (2) taklit emek", "take off"],
+            "U": ["sahipsiz, sahibi ortada gözükmeyen (eşya, çocuk vb)", "unattended"],
+            "V": ["tatil", "vacation"],
+            "W": ["( (1) durduk yere, sebepsiz yere (2) ahlaksızca, şehvetle", "wantonly"],
+            "X": ["Yabancı düşmanlığı", "xenophobia"],
+            "Y": ["avlu, bahçe", "yard"],
+            "Z": ["fermuar", "zip"]
+        };
+
+        let currentIndex = 0;
+        let letters = Object.keys(qaDict);
+        let passedQuestions = [];
+        let correctAnswers = {};
+        let incorrectAnswers = {};
+        let startTime = Date.now();
+        let timeLimit = 300; // 5 minutes
+        let remainingTime = timeLimit;
+
+        function loadQuestion() {
+            if (currentIndex < letters.length) {
+                let currentLetter = letters[currentIndex];
+                let question = qaDict[currentLetter][0];
+                document.getElementById('question').innerText = `${currentLetter}: ${question}`;
+            } else {
+                if (passedQuestions.length > 0) {
+                    let currentLetter = passedQuestions.shift();
+                    let question = qaDict[currentLetter][0];
+                    document.getElementById('question').innerText = `${currentLetter}: ${question}`;
+                } else {
+                    endGame();
+                }
+            }
+        }
+
+        function checkAnswer() {
+            let currentLetter = letters[currentIndex];
+            let correctAnswer = qaDict[currentLetter][1].toLowerCase();
+            let userAnswer = document.getElementById('answer').value.trim().toLowerCase();
+            if (userAnswer === correctAnswer) {
+                correctAnswers[currentLetter] = userAnswer;
+            } else {
+                incorrectAnswers[currentLetter] = userAnswer;
+            }
+            document.getElementById('answer').value = '';
+            currentIndex++;
+            loadQuestion();
+        }
+
+        function passQuestion() {
+            let currentLetter = letters[currentIndex];
+            passedQuestions.push(currentLetter);
+            document.getElementById('answer').value = '';
+            currentIndex++;
+            loadQuestion();
+        }
+
+        function endGame() {
+            let results = `Correct Answers: ${Object.keys(correctAnswers).length}\nIncorrect Answers: ${Object.keys(incorrectAnswers).length}\n`;
+            for (let letter in correctAnswers) {
+                results += `${letter}: Correct (${correctAnswers[letter]})\n`;
+            }
+            for (let letter in incorrectAnswers) {
+                results += `${letter}: Incorrect (${incorrectAnswers[letter]})\n`;
+            }
+            alert(results);
+        }
+
+        function updateTimer() {
+            let elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            remainingTime = timeLimit - elapsedTime;
+            if (remainingTime <= 0) {
+                endGame();
+            } else {
+                let mins = Math.floor(remainingTime / 60);
+                let secs = remainingTime % 60;
+                document.getElementById('timer').innerText = `Time Remaining: ${mins}:${secs < 10 ? '0' + secs : secs}`;
+                setTimeout(updateTimer, 1000);
+            }
+        }
+
+        window.onload = function() {
+            loadQuestion();
+            updateTimer();
+        }
+    </script>
+</body>
+</html>
